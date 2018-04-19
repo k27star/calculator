@@ -155,5 +155,87 @@ class Neg(UnOp):
         """Print fully parenthesized"""
         return "~{}".format(self.left)
 
-# FIXME:  We also need binary operators.  You need an abstract class
-# BinOp and a set of concrete subclasses Plus, Minus, Times, Div
+class BinOp(Expr):
+    """Abstract superclass for binary expressions like addition, etc."""
+
+    def __init__(self, left: Expr, right: Expr):
+        """A binary operation has both a right and left side expression"""
+        assert isinstance(left, Expr)
+        assert isinstance(right, Expr)
+        self.left = left
+        self.right = right
+
+    def __eq__(self, other):
+        """Identical expression"""
+        return type(self) == type(other) \
+            and self.left == other.left \
+            and self.right == other.right
+
+    def eval(self, env: Env) -> Const:
+        """Evaluation strategy for binary expressions"""
+        log.debug("Evaluating {} in BinOp".format(self))
+        lval = self.left.eval(env)
+        rval = self.right.eval(env)
+        assert isinstance(lval, Const), "Op {} applies to numbers, not to {}".format(
+            type(self).__name__, lval)
+        assert isinstance(rval, Const), "Op {} applies to numbers, not to {}".format(
+            type(self).__name__, rval)
+        lval_n = lval.value()
+        rval_n = rval.value()
+        return Const(self._apply(lval_n, rval_n))
+
+    def _apply(self, lval: Real, rval: Real) -> Real:
+        raise NotImplementedError("Class {} has not implemented _apply".format(
+            type(self).__name__))
+
+class Plus(BinOp):
+    def _apply(self, lval: Real, rval: Real) -> Real:
+        """Adding a left and right expression"""
+        return lval + rval
+
+    def __repr__(self):
+        '''Returns the instance the way it was constructed'''
+        return "Plus({},{})".format(repr(self.left), repr(self.right))
+
+    def __str__(self):
+        """Print fully parenthesized"""
+        return "({} + {})".format(self.left, self.right)
+
+class Minus(BinOp):
+    def _apply(self, lval: Real, rval: Real) -> Real:
+        """Subtracting a left and right expression"""
+        return lval - rval
+
+    def __repr__(self):
+        '''Returns the instance the way it was constructed'''
+        return "Minus({},{})".format(repr(self.left), repr(self.right))
+
+    def __str__(self):
+        """Print fully parenthesized"""
+        return "({} - {})".format(self.left, self.right)
+
+class Times(BinOp):
+    def _apply(self, lval: Real, rval: Real) -> Real:
+        """Multiplying a left and right expression"""
+        return lval * rval
+
+    def __repr__(self):
+        '''Returns the instance the way it was constructed'''
+        return "Times({},{})".format(repr(self.left), repr(self.right))
+
+    def __str__(self):
+        """Print fully parenthesized"""
+        return "({} * {})".format(self.left, self.right)
+
+class Div(BinOp):
+    def _apply(self, lval: Real, rval: Real) -> Real:
+        """Dividing a left and right expression"""
+        return lval / rval
+
+    def __repr__(self):
+        '''Returns the instance the way it was constructed'''
+        return "Div({},{})".format(repr(self.left), repr(self.right))
+
+    def __str__(self):
+        """Print fully parenthesized"""
+        return "({} / {})".format(self.left, self.right)
